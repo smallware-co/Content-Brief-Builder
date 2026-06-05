@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Brief Builder — EngineeredAI Tools</title>
+  <meta name="description" content="Enter a keyword. Get a full content brief — audience, intent, H2 structure, word count, angles, and related terms. AI-powered, bring your own key.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber: #F5A623;
+      --amber-dim: #c4841c;
+      --bg: #080808;
+      --bg-card: #0e0e0e;
+      --bg-input: #0c0c0c;
+      --border: #1c1c1c;
+      --border-mid: #262626;
+      --text: #e2e2e2;
+      --text-mid: #888;
+      --text-dim: #444;
+      --green: #4ade80;
+      --red: #f87171;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center;
+      padding: 0 24px; height: 48px;
+      background: rgba(8,8,8,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--text); text-decoration: none; }
+    .nav-brand span { color: var(--amber); }
+    .nav-sep { font-family: var(--mono); color: var(--text-dim); margin: 0 10px; font-size: 12px; }
+    .nav-path { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+    .nav-path span { color: var(--amber); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    .nav-link { font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-decoration: none; transition: color 0.15s; }
+    .nav-link:hover { color: var(--amber); }
+
+    /* LAYOUT */
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      min-height: calc(100vh - 48px);
+    }
+
+    /* LEFT PANEL */
+    .panel-left {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 32px 24px;
+      gap: 24px;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      margin-bottom: 4px;
+    }
+    .panel-heading {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .panel-heading em { color: var(--amber); font-style: normal; }
+    .panel-sub {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.65;
+    }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* KEY SECTION */
+    .key-section {}
+    .field-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .field-label .lock { color: var(--amber); }
+    .field-label a { color: var(--amber); text-decoration: none; font-size: 10px; }
+    .field-label a:hover { text-decoration: underline; }
+
+    input[type="password"], input[type="text"], textarea, select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-mid);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      resize: none;
+    }
+    input[type="password"]:focus,
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--amber);
+    }
+    input::placeholder, textarea::placeholder { color: var(--text-dim); }
+    select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23444'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+
+    .key-note {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 7px;
+      line-height: 1.5;
+    }
+    .key-note .ok { color: var(--green); }
+
+    /* KEYWORD SECTION */
+    .keyword-section {}
+    .keyword-wrap { position: relative; }
+    .keyword-wrap input { font-size: 14px; padding: 12px 14px; font-family: var(--sans); }
+    .keyword-wrap input:focus { border-color: var(--amber); }
+
+    /* OPTIONS */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .option-field {}
+
+    /* RUN BUTTON */
+    .run-btn {
+      width: 100%;
+      background: var(--amber);
+      color: #000;
+      border: none;
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 13px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .run-btn:hover { background: #e8971f; }
+    .run-btn:active { transform: scale(0.99); }
+    .run-btn:disabled { background: #2a2a2a; color: var(--text-dim); cursor: not-allowed; transform: none; }
+
+    .run-btn .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .run-btn.loading .spinner { display: block; }
+    .run-btn.loading .btn-text { opacity: 0.6; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--red);
+      padding: 10px 12px;
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 3px;
+      display: none;
+      line-height: 1.5;
+    }
+    .error-msg.visible { display: block; }
+
+    /* RIGHT PANEL */
+    .panel-right {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 40px;
+      text-align: center;
+    }
+    .empty-icon {
+      font-size: 32px;
+      opacity: 0.3;
+      margin-bottom: 4px;
+    }
+    .empty-state p { color: var(--text-dim); max-width: 280px; line-height: 1.6; }
+
+    /* BRIEF OUTPUT */
+    .brief-output {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+    .brief-output.visible { display: flex; }
+
+    .brief-toolbar {
+      display: flex;
+      align-items: center;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .brief-toolbar-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--amber);
+      letter-spacing: 0.1em;
+    }
+    .brief-keyword-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: #131313;
+      border: 1px solid var(--border-mid);
+      border-radius: 2px;
+      padding: 2px 8px;
+      color: var(--text-mid);
+    }
+    .toolbar-actions { margin-left: auto; display: flex; gap: 8px; }
+    .toolbar-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid var(--border-mid);
+      border-radius: 2px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .toolbar-btn:hover { border-color: var(--amber); color: var(--amber); }
+    .toolbar-btn.copied { border-color: var(--green); color: var(--green); }
+
+    .brief-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 28px 40px;
+    }
+    .brief-body::-webkit-scrollbar { width: 4px; }
+    .brief-body::-webkit-scrollbar-track { background: transparent; }
+    .brief-body::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+
+    /* BRIEF SECTIONS */
+    .brief-section {
+      margin-bottom: 28px;
+      animation: fadeUp 0.3s ease both;
+    }
+    .brief-section:nth-child(1) { animation-delay: 0.05s; }
+    .brief-section:nth-child(2) { animation-delay: 0.1s; }
+    .brief-section:nth-child(3) { animation-delay: 0.15s; }
+    .brief-section:nth-child(4) { animation-delay: 0.2s; }
+    .brief-section:nth-child(5) { animation-delay: 0.25s; }
+    .brief-section:nth-child(6) { animation-delay: 0.3s; }
+    .brief-section:nth-child(7) { animation-delay: 0.35s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bs-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bs-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .bs-content {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .bs-content p { margin-bottom: 8px; }
+    .bs-content p:last-child { margin-bottom: 0; }
+
+    /* H2 LIST */
+    .h2-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .h2-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 13px;
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+    .h2-item:hover { border-color: var(--border-mid); }
+    .h2-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--amber);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .h2-text { line-height: 1.4; }
+    .h2-note { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+    /* TAGS */
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .brief-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-mid);
+      border-radius: 2px;
+      color: var(--text-mid);
+    }
+
+    /* META ROW */
+    .meta-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .meta-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 14px;
+    }
+    .meta-box-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+    .meta-box-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--amber);
+      font-weight: 500;
+    }
+
+    /* TITLE SUGGESTIONS */
+    .title-list { display: flex; flex-direction: column; gap: 6px; }
+    .title-item {
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.4;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .title-item:hover { border-color: var(--amber); }
+
+    /* LOADING STATE */
+    .loading-state {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 40px;
+    }
+    .loading-state.visible { display: flex; }
+    .loading-bar-wrap {
+      width: 240px;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .loading-bar {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 1px;
+      animation: loadBar 1.8s ease-in-out infinite;
+    }
+    @keyframes loadBar {
+      0% { width: 0%; margin-left: 0; }
+      50% { width: 60%; margin-left: 20%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+    .loading-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+    }
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+    .loading-step {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .loading-step.active { opacity: 1; color: var(--amber); }
+    .loading-step.done { opacity: 0.4; color: var(--green); }
+
+    /* FOOTER */
+    .page-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .page-footer a { color: var(--amber); text-decoration: none; }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+      .options-grid { grid-template-columns: 1fr; }
+      .meta-row { grid-template-columns: 1fr 1fr; }
+      .brief-body { padding: 20px 16px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="https://engineeredai.net" class="nav-brand">ENGINEERED<span>AI</span></a>
+    <span class="nav-sep">//</span>
+    <span class="nav-path">tools <span>/ content-brief-builder</span></span>
+    <div class="nav-right">
+      <a href="https://engineeredai.net/tools" class="nav-link">← all tools</a>
+      <a href="https://github.com/smallware-co/content-brief-builder" target="_blank" rel="noopener" class="nav-link">github ↗</a>
+    </div>
+  </nav>
+
+  <div class="layout">
+
+    <!-- LEFT PANEL -->
+    <div class="panel-left">
+
+      <div>
+        <div class="panel-title">// content-brief-builder</div>
+        <div class="panel-heading">Keyword in.<br><em>Full brief out.</em></div>
+        <p class="panel-sub">Enter a keyword or topic. Get a complete content brief — audience, intent, structure, word count, title options, and related terms.</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- API KEY -->
+      <div class="key-section">
+        <div class="field-label">
+          <span><span class="lock">🔒</span> API KEY</span>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">get free key →</a>
+        </div>
+        <input type="password" id="apiKey" placeholder="paste your Gemini / OpenAI / Anthropic key" autocomplete="off">
+        <div class="key-note" id="keyNote">Key stays in your browser only. Never stored or logged.</div>
+
+        <div class="field-label" style="margin-top:12px;">AI PROVIDER</div>
+        <select id="provider">
+          <option value="gemini">Gemini (Google)</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- KEYWORD -->
+      <div class="keyword-section">
+        <div class="field-label">KEYWORD OR TOPIC</div>
+        <div class="keyword-wrap">
+          <input type="text" id="keyword" placeholder="e.g. playwright testing tutorial" maxlength="120">
+        </div>
+      </div>
+
+      <!-- OPTIONS -->
+      <div>
+        <div class="field-label">OPTIONS</div>
+        <div class="options-grid">
+          <div class="option-field">
+            <div class="field-label">CONTENT TYPE</div>
+            <select id="contentType">
+              <option value="blog post">Blog Post</option>
+              <option value="how-to guide">How-To Guide</option>
+              <option value="comparison post">Comparison</option>
+              <option value="listicle">Listicle</option>
+              <option value="pillar page">Pillar Page</option>
+            </select>
+          </div>
+          <div class="option-field">
+            <div class="field-label">AUDIENCE</div>
+            <select id="audience">
+              <option value="general">General</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div class="error-msg" id="errorMsg"></div>
+
+      <!-- RUN -->
+      <button class="run-btn" id="runBtn" onclick="runBrief()">
+        <div class="spinner"></div>
+        <span class="btn-text">Build Brief →</span>
+      </button>
+
+      <div class="page-footer" style="padding:0; border:none; margin-top:auto;">
+        built by <a href="https://smallware.co" target="_blank">smallware.co</a>
+        <span style="margin-left:auto; color:var(--border-mid);">v1.0</span>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel-right">
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">◧</div>
+        <p style="font-size:13px; color:var(--text-mid);">Your brief will appear here.</p>
+        <p>Enter a keyword on the left and hit <span style="color:var(--amber);">Build Brief →</span></p>
+      </div>
+
+      <!-- LOADING STATE -->
+      <div class="loading-state" id="loadingState">
+        <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+        <div class="loading-steps">
+          <div class="loading-step" id="step1">// analyzing keyword intent</div>
+          <div class="loading-step" id="step2">// mapping content structure</div>
+          <div class="loading-step" id="step3">// generating title options</div>
+          <div class="loading-step" id="step4">// surfacing related terms</div>
+        </div>
+      </div>
+
+      <!-- BRIEF OUTPUT -->
+      <div class="brief-output" id="briefOutput">
+        <div class="brief-toolbar">
+          <span class="brief-toolbar-label">// brief</span>
+          <span class="brief-keyword-tag" id="briefKeywordTag"></span>
+          <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="copyBrief()">copy brief</button>
+            <button class="toolbar-btn" onclick="resetBrief()">new brief</button>
+          </div>
+        </div>
+        <div class="brief-body" id="briefBody"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Persist key
+    const keyInput = document.getElementById('apiKey');
+    const savedKey = localStorage.getItem('sw_api_key');
+    const savedProvider = localStorage.getItem('sw_provider');
+    if (savedKey) {
+      keyInput.value = savedKey;
+      document.getElementById('keyNote').innerHTML = '<span class="ok">✓</span> Key loaded from browser storage.';
+    }
+    if (savedProvider) document.getElementById('provider').value = savedProvider;
+
+    keyInput.addEventListener('input', () => {
+      const val = keyInput.value.trim();
+      if (val.length > 10) {
+        localStorage.setItem('sw_api_key', val);
+        document.getElementById('keyNote').innerHTML = '<span class="ok">✓</span> Key saved in browser.';
+      }
+    });
+    document.getElementById('provider').addEventListener('change', () => {
+      localStorage.setItem('sw_provider', document.getElementById('provider').value);
+    });
+
+    // Enter to run
+    document.getElementById('keyword').addEventListener('keydown', e => {
+      if (e.key === 'Enter') runBrief();
+    });
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+    function hideError() {
+      document.getElementById('errorMsg').classList.remove('visible');
+    }
+
+    function setLoading(on) {
+      const btn = document.getElementById('runBtn');
+      const empty = document.getElementById('emptyState');
+      const loading = document.getElementById('loadingState');
+      const output = document.getElementById('briefOutput');
+
+      if (on) {
+        btn.disabled = true;
+        btn.classList.add('loading');
+        btn.querySelector('.btn-text').textContent = 'Building...';
+        empty.style.display = 'none';
+        loading.classList.add('visible');
+        output.classList.remove('visible');
+        animateSteps();
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        btn.querySelector('.btn-text').textContent = 'Build Brief →';
+        loading.classList.remove('visible');
+        resetSteps();
+      }
+    }
+
+    let stepTimers = [];
+    function animateSteps() {
+      const steps = ['step1','step2','step3','step4'];
+      steps.forEach(s => document.getElementById(s).className = 'loading-step');
+      steps.forEach((s, i) => {
+        stepTimers.push(setTimeout(() => {
+          if (i > 0) document.getElementById(steps[i-1]).classList.add('done');
+          document.getElementById(s).classList.add('active');
+        }, i * 1200));
+      });
+    }
+    function resetSteps() {
+      stepTimers.forEach(clearTimeout);
+      stepTimers = [];
+      ['step1','step2','step3','step4'].forEach(s => {
+        document.getElementById(s).className = 'loading-step';
+      });
+    }
+
+    async function callGemini(key, prompt) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error?.message || `Gemini error ${res.status}`);
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+
+    async function callOpenAI(key, prompt) {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], max_tokens: 2000 })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error?.message || `OpenAI error ${res.status}`);
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || '';
+    }
+
+    async function callAnthropic(key, prompt) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error?.message || `Anthropic error ${res.status}`);
+      }
+      const data = await res.json();
+      return data.content?.[0]?.text || '';
+    }
+
+    async function runBrief() {
+      hideError();
+      const key = document.getElementById('apiKey').value.trim();
+      const keyword = document.getElementById('keyword').value.trim();
+      const provider = document.getElementById('provider').value;
+      const contentType = document.getElementById('contentType').value;
+      const audience = document.getElementById('audience').value;
+
+      if (!key) { showError('Paste your API key first.'); return; }
+      if (!keyword) { showError('Enter a keyword or topic.'); return; }
+
+      setLoading(true);
+
+      const prompt = `You are a senior content strategist. Generate a complete content brief for the following:
+
+KEYWORD: "${keyword}"
+CONTENT TYPE: ${contentType}
+TARGET AUDIENCE: ${audience}
+
+Return ONLY a valid JSON object — no markdown, no backticks, no extra text. Use this exact structure:
+
+{
+  "intent": "one sentence describing the primary search intent behind this keyword",
+  "audience": "specific description of who is searching this and what they need",
+  "angle": "the unique content angle that would make this post stand out",
+  "word_count": "recommended word count range e.g. 1500-2000",
+  "difficulty": "Easy / Medium / Hard",
+  "content_type": "${contentType}",
+  "titles": [
+    "Title option 1",
+    "Title option 2",
+    "Title option 3"
+  ],
+  "h2s": [
+    { "heading": "H2 heading text", "note": "one sentence on what this section covers" },
+    { "heading": "H2 heading text", "note": "one sentence on what this section covers" },
+    { "heading": "H2 heading text", "note": "one sentence on what this section covers" },
+    { "heading": "H2 heading text", "note": "one sentence on what this section covers" },
+    { "heading": "H2 heading text", "note": "one sentence on what this section covers" }
+  ],
+  "related_terms": ["term1", "term2", "term3", "term4", "term5", "term6", "term7", "term8"],
+  "cta": "recommended call to action for end of post",
+  "notes": "any additional strategic notes for the writer"
+}`;
+
+      try {
+        let raw = '';
+        if (provider === 'gemini') raw = await callGemini(key, prompt);
+        else if (provider === 'openai') raw = await callOpenAI(key, prompt);
+        else raw = await callAnthropic(key, prompt);
+
+        // Strip markdown fences if present
+        raw = raw.replace(/```json|```/g, '').trim();
+        const brief = JSON.parse(raw);
+        setLoading(false);
+        renderBrief(keyword, brief);
+      } catch (err) {
+        setLoading(false);
+        if (err.message.includes('JSON')) {
+          showError('Could not parse AI response. Try again.');
+        } else {
+          showError('Error: ' + err.message);
+        }
+        document.getElementById('emptyState').style.display = 'flex';
+      }
+    }
+
+    function renderBrief(keyword, b) {
+      document.getElementById('briefKeywordTag').textContent = keyword;
+
+      const body = document.getElementById('briefBody');
+
+      const diffColor = b.difficulty === 'Easy' ? 'var(--green)' : b.difficulty === 'Hard' ? 'var(--red)' : 'var(--amber)';
+
+      body.innerHTML = `
+        <div class="brief-section">
+          <div class="bs-label">// overview</div>
+          <div class="meta-row">
+            <div class="meta-box">
+              <div class="meta-box-label">WORD COUNT</div>
+              <div class="meta-box-value">${b.word_count || '—'}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">DIFFICULTY</div>
+              <div class="meta-box-value" style="color:${diffColor}">${b.difficulty || '—'}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">FORMAT</div>
+              <div class="meta-box-value" style="font-size:11px;">${b.content_type || '—'}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// search intent</div>
+          <div class="bs-content"><p>${b.intent || '—'}</p></div>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// target audience</div>
+          <div class="bs-content"><p>${b.audience || '—'}</p></div>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// content angle</div>
+          <div class="bs-content"><p>${b.angle || '—'}</p></div>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// title options</div>
+          <div class="title-list">
+            ${(b.titles || []).map(t => `<div class="title-item">${t}</div>`).join('')}
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// h2 structure</div>
+          <ul class="h2-list">
+            ${(b.h2s || []).map((h, i) => `
+              <li class="h2-item">
+                <span class="h2-num">H${i === 0 ? '2' : '2'}.${String(i+1).padStart(2,'0')}</span>
+                <div>
+                  <div class="h2-text">${h.heading}</div>
+                  <div class="h2-note">${h.note}</div>
+                </div>
+              </li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// related terms</div>
+          <div class="tag-list">
+            ${(b.related_terms || []).map(t => `<span class="brief-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="bs-label">// call to action</div>
+          <div class="bs-content"><p>${b.cta || '—'}</p></div>
+        </div>
+
+        ${b.notes ? `
+        <div class="brief-section">
+          <div class="bs-label">// writer notes</div>
+          <div class="bs-content"><p>${b.notes}</p></div>
+        </div>` : ''}
+      `;
+
+      document.getElementById('briefOutput').classList.add('visible');
+      document.getElementById('emptyState').style.display = 'none';
+
+      // Store for copy
+      window._lastBrief = { keyword, brief: b };
+    }
+
+    function copyBrief() {
+      if (!window._lastBrief) return;
+      const { keyword, brief: b } = window._lastBrief;
+      const text = `CONTENT BRIEF: ${keyword}
+${'='.repeat(50)}
+
+OVERVIEW
+Word Count: ${b.word_count}
+Difficulty: ${b.difficulty}
+Format: ${b.content_type}
+
+SEARCH INTENT
+${b.intent}
+
+TARGET AUDIENCE
+${b.audience}
+
+CONTENT ANGLE
+${b.angle}
+
+TITLE OPTIONS
+${(b.titles || []).map((t, i) => `${i+1}. ${t}`).join('\n')}
+
+H2 STRUCTURE
+${(b.h2s || []).map((h, i) => `${i+1}. ${h.heading}\n   ${h.note}`).join('\n')}
+
+RELATED TERMS
+${(b.related_terms || []).join(', ')}
+
+CALL TO ACTION
+${b.cta}
+
+${b.notes ? `WRITER NOTES\n${b.notes}` : ''}
+
+---
+Generated by content-brief-builder | engineeredai.net/tools
+Built by smallware.co`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.toolbar-btn');
+        btn.textContent = 'copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy brief'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    function resetBrief() {
+      document.getElementById('briefOutput').classList.remove('visible');
+      document.getElementById('emptyState').style.display = 'flex';
+      document.getElementById('keyword').value = '';
+      document.getElementById('keyword').focus();
+      window._lastBrief = null;
+    }
+  </script>
+
+</body>
+</html>
